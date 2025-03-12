@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import pyrealsense2 as rs
 import yaml
+import os
 
 from mast3r_slam.mast3r_utils import resize_img
 from mast3r_slam.config import config
@@ -59,6 +60,44 @@ class MonocularDataset(torch.utils.data.Dataset):
     def has_calib(self):
         return self.camera_intrinsics is not None
 
+class VSLAMLABDataset(MonocularDataset):
+    def __init__(self, sequence_path, rgb_txt, calibration_yaml):
+        super().__init__()
+
+        self.dataset_path = pathlib.Path(sequence_path)
+
+        # Load rgb images
+        self.rgb_files = []
+        self.timestamps = []
+        with open(rgb_txt, 'r') as file:
+            for line in file:
+                timestamp, path, *extra = line.strip().split(' ')
+                self.rgb_files.append(os.path.join(sequence_path, path))
+                self.timestamps.append(timestamp)
+
+        with open(calibration_yaml, 'r') as file:
+            lines = file.readlines()
+        if lines and lines[0].strip() == '%YAML:1.0':
+            lines = lines[1:]
+
+        calibration = yaml.safe_load(''.join(lines))  
+        if config["use_calib"] == "UNKNOWN":
+            config["use_calib"] = False
+            self.use_calibration = False
+        else:    
+            fx, fy, cx, cy = calibration["Camera.fx"],calibration["Camera.fy"],calibration["Camera.cx"],calibration["Camera.cy"]
+            k1, k2, p1, p2, k3 = calibration["Camera.k1"], calibration["Camera.k2"], calibration["Camera.p1"], calibration["Camera.p2"], calibration["Camera.k3"]
+            W = calibration["Camera.w"]
+            H = calibration["Camera.h"]
+            if (calibration["Camera.k1"] == 0 and calibration["Camera.k2"] == 0 and calibration["Camera.k3"] == 0 
+                and calibration["Camera.p1"] == 0 and calibration["Camera.p2"] == 0):
+                calibration = np.array([fx, fy, cx, cy])
+            else:
+                calibration = np.array([fx, fy, cx, cy, k1, k2, p1, p2, k3])
+
+            _, (H, W) = self.get_img_shape()
+            self.camera_intrinsics = Intrinsics.from_calib(self.img_size, W, H, calibration)
+        print(f"Use calibration: {self.use_calibration}")
 
 class TUMDataset(MonocularDataset):
     def __init__(self, dataset_path):
@@ -289,22 +328,24 @@ class Intrinsics:
         return Intrinsics(img_size, W, H, K, K_opt, distortion, mapx, mapy)
 
 
-def load_dataset(dataset_path):
-    split_dataset_type = dataset_path.split("/")
-    if "tum" in split_dataset_type:
-        return TUMDataset(dataset_path)
-    if "euroc" in split_dataset_type:
-        return EurocDataset(dataset_path)
-    if "eth3d" in split_dataset_type:
-        return ETH3DDataset(dataset_path)
-    if "7-scenes" in split_dataset_type:
-        return SevenScenesDataset(dataset_path)
-    if "realsense" in split_dataset_type:
-        return RealsenseDataset()
-    if "webcam" in split_dataset_type:
-        return Webcam()
+def load_dataset(sequence_path, rgb_txt, calibration_yaml):
+        return VSLAMLABDataset(sequence_path, rgb_txt, calibration_yaml)
 
-    ext = split_dataset_type[-1].split(".")[-1]
-    if ext in ["mp4", "avi", "MOV", "mov"]:
-        return MP4Dataset(dataset_path)
-    return RGBFiles(dataset_path)
+    # split_dataset_type = dataset_path.split("/")
+    # if "tum" in split_dataset_type:
+    #     return TUMDataset(dataset_path)
+    # if "euroc" in split_dataset_type:
+    #     return EurocDataset(dataset_path)
+    # if "eth3d" in split_dataset_type:
+    #     return ETH3DDataset(dataset_path)
+    # if "7-scenes" in split_dataset_type:
+    #     return SevenScenesDataset(dataset_path)
+    # if "realsense" in split_dataset_type:
+    #     return RealsenseDataset()
+    # if "webcam" in split_dataset_type:
+    #     return Webcam()
+
+    # ext = split_dataset_type[-1].split(".")[-1]
+    # if ext in ["mp4", "avi", "MOV", "mov"]:
+    #     return MP4Dataset(dataset_path)
+    # return RGBFiles(dataset_path)

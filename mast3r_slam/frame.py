@@ -121,6 +121,14 @@ def create_frame(i, img, T_WC, img_size=512, device="cuda:0"):
     frame = Frame(i, rgb, img_shape, img_true_shape, uimg, T_WC)
     return frame
 
+class Pose:
+    frame_id: int
+    T_WC: lietorch.Sim3 = lietorch.Sim3.Identity(1)
+    timestamp: float = 0.0
+    def __init__(self, frame, timestamp):
+        self.frame_id = frame.frame_id
+        self.T_WC = frame.T_WC
+        self.timestamp = timestamp
 
 class SharedStates:
     def __init__(self, manager, h, w, dtype=torch.float32, device="cuda"):

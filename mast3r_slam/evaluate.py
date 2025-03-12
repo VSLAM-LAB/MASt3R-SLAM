@@ -23,7 +23,7 @@ def save_ATE(
     logdir,
     logfile,
     timestamps,
-    frames: SharedKeyframes,
+    frames, # : SharedKeyframes,
     intrinsics: Optional[Intrinsics] = None,
 ):
     # log
