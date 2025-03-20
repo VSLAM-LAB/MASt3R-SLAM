@@ -220,6 +220,7 @@ if __name__ == "__main__":
     frames = []
     poses = []
     while True:
+        print(f"Processed {100 * i/num_frames} %")
         mode = states.get_mode()
         msg = try_get_msg(viz2main)
         last_msg = msg if msg is not None else last_msg
@@ -268,7 +269,7 @@ if __name__ == "__main__":
             states.set_frame(frame)
             poses.append(Pose(frame,timestamp))
             if i % keyframe_interval == 0:
-                print(f"Force Create KeyFrame {i}, {match_info}")
+                print(f"Force Create KeyFrame {i}")
                 add_new_kf = True
 
         elif mode == Mode.RELOC:
