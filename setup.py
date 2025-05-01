@@ -2,6 +2,9 @@ from setuptools import setup, find_packages
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension, include_paths, library_paths
 import os.path as osp
 import os 
+from pathlib import Path
+
+asmk = Path(__file__).parent / "thirdparty" / "mast3r" / "asmk"
 
 ROOT = osp.dirname(osp.abspath(__file__))
 torch_include_dirs = include_paths()
@@ -28,6 +31,7 @@ setup(
             'vslamlab_mast3rslam_mono = mast3r_slam.vslamlab_mast3rslam_mono:main',
         ]
     },
+    install_requires=[f"asmk @ {asmk.as_uri()}"],
     ext_modules=[
         CUDAExtension(
             name='mast3r_slam_backends',
