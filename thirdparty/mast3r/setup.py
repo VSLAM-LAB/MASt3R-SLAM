@@ -7,7 +7,7 @@ asmk = Path(__file__).parent / "asmk"
 setup(
     install_requires=[
         #"scikit-learn",
-        "roma",
+        #"roma",
         #"gradio",
         #"matplotlib",
         #"tqdm",
