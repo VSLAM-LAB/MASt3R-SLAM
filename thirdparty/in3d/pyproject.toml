@@ -17,3 +17,6 @@ include = ["in3d", "in3d.*"]
 
 [tool.setuptools]
 include-package-data = true
+
+[tool.setuptools.data-files]
+"resources" = ["resources/*"]
