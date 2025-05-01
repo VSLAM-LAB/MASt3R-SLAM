@@ -24,8 +24,8 @@ setup(
         'in3d': 'thirdparty/in3d/in3d',
     },    
     data_files=[
-        ("resources/programs", glob("resources/*.glsl")),
-        ("resources/programs", glob("thirdparty/in3d/resources/*.glsl"))
+        ("resources/programs", glob("resources/programs/*.glsl")),
+        ("resources/programs", glob("thirdparty/in3d/resources/programs/*.glsl"))
     ],
     include_package_data=True,
     package_data={
