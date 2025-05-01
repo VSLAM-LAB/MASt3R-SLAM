@@ -170,7 +170,7 @@ def main():
     settings_path = args.settings_yaml
     if not os.path.exists(settings_path):
         settings_path = pkg_resources.resource_filename(
-            'mast3rslam.configs', 'vslamlab_mast3rslam-dev_settings.yaml'
+            'mast3r_slam.configs', 'vslamlab_mast3rslam-dev_settings.yaml'
         )
 
     with open(settings_path, 'r') as file:
