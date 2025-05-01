@@ -7,8 +7,8 @@ pyimgui_path = (thirdparty_path / "pyimgui").as_uri()
 setup(
     install_requires=[
         f"imgui @ {pyimgui_path}",
-        "moderngl==5.12.0",
-        "moderngl-window==2.4.6",
+        "moderngl",
+        "moderngl-window",
         "glfw",
         "pyglm",
         "msgpack",
