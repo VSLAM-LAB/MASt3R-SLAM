@@ -3,6 +3,9 @@ from torch.utils.cpp_extension import BuildExtension, CUDAExtension, include_pat
 import os.path as osp
 import os, glob
 from pathlib import Path
+import site
+
+site_packages_path = next(p for p in site.getsitepackages() if "site-packages" in p)
 
 asmk = Path(__file__).parent / "thirdparty" / "mast3r" / "asmk"
 pyimgui_path = Path(__file__).parent / "thirdparty"/ "in3d" / "thirdparty" / "pyimgui"
@@ -10,6 +13,10 @@ pyimgui_path = Path(__file__).parent / "thirdparty"/ "in3d" / "thirdparty" / "py
 ROOT = osp.dirname(osp.abspath(__file__))
 torch_include_dirs = include_paths()
 torch_library_dirs = library_paths()
+
+# Collect .glsl files
+resource_glsl_files = glob.glob("resources/**/*.glsl", recursive=True)
+in3d_glsl_files = glob.glob("thirdparty/in3d/resources/**/*.glsl", recursive=True)
 
 setup(
     name='vslamlab-mast3rslam-mono',
@@ -23,10 +30,15 @@ setup(
         'dust3r': 'thirdparty/mast3r/dust3r',
         'in3d': 'thirdparty/in3d/in3d',
     },    
-    data_files=[
-        ("resources/programs", glob("resources/programs/*.glsl")),
-        ("resources/programs", glob("thirdparty/in3d/resources/programs/*.glsl"))
-    ],
+    data_files = [
+    (
+        os.path.join(site_packages_path, "resources"),
+        resource_glsl_files
+    ),
+    (
+        os.path.join(site_packages_path, "in3d_resources"),
+        in3d_glsl_files
+    )],
     include_package_data=True,
     package_data={
         'mast3r_slam.config': ['vslamlab_mast3rslam_settings.yaml'], 
