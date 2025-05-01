@@ -28,7 +28,7 @@ setup(
     package_data={
         'mast3r_slam': ['resources/programs/*.glsl'],
         'in3d': ['resources/programs/*.glsl'],
-        'mast3r_slam.configs': ['*.yaml'],
+        'mast3r_slam.configs': ['vslamlab_mast3rslam-dev_settings.yaml'],
     },
     entry_points={
         'console_scripts': [
