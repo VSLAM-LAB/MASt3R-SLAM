@@ -9,6 +9,7 @@ import torch
 import tqdm
 import os
 import yaml
+import pkg_resources
 from mast3r_slam.global_opt import FactorGraph
 
 from mast3r_slam.config import load_config, config, set_global_config
@@ -72,12 +73,12 @@ def relocalization(frame, keyframes, factor_graph, retrieval_database):
         return successful_loop_closure
 
 
-def run_backend(cfg, model, states, keyframes, K):
+def run_backend(cfg, model, states, keyframes, K, checkpoints_dir= "checkpoints"):
     set_global_config(cfg)
 
     device = keyframes.device
     factor_graph = FactorGraph(model, keyframes, K, device)
-    retrieval_database = load_retriever(model)
+    retrieval_database = load_retriever(model, checkpoints_dir=checkpoints_dir)
 
     mode = states.get_mode()
     while mode is not Mode.TERMINATED:
@@ -162,9 +163,19 @@ def main():
     parser.add_argument("--save-as", default="default")
     parser.add_argument("--no-viz", action="store_true")
     parser.add_argument("--no_calib", action="store_true")
+    parser.add_argument("--checkpoints_dir", type=str, help="checkpoints")
 
     args = parser.parse_args()
     no_viz = not bool(int(args.verbose))
+    settings_path = args.settings_yaml
+    if not os.path.exists(settings_path):
+        settings_path = pkg_resources.resource_filename(
+            'mast3rslam.configs', 'vslamlab_mast3rslam-dev_settings.yaml'
+        )
+
+    with open(settings_path, 'r') as file:
+        settings = yaml.safe_load(file)
+
     load_config(args.settings_yaml)
     config["use_calib"] = not args.no_calib
 
@@ -194,7 +205,7 @@ def main():
         )
         viz.start()
 
-    model = load_mast3r(device=device)
+    model = load_mast3r(device=device, checkpoints_dir=args.checkpoints_dir)
     model.share_memory()
 
     has_calib = dataset.has_calib()
@@ -212,7 +223,7 @@ def main():
     tracker = FrameTracker(model, keyframes, device)
     last_msg = WindowMsg()
 
-    backend = mp.Process(target=run_backend, args=(config, model, states, keyframes, K))
+    backend = mp.Process(target=run_backend, args=(config, model, states, keyframes, K, args.checkpoints_dir))
     backend.start()
 
     i = 0
