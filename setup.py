@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 asmk = Path(__file__).parent / "thirdparty" / "mast3r" / "asmk"
+pyimgui_path = Path(__file__).parent / "thirdparty"/ "in3d" / "thirdparty" / "pyimgui"
 
 ROOT = osp.dirname(osp.abspath(__file__))
 torch_include_dirs = include_paths()
@@ -31,7 +32,7 @@ setup(
             'vslamlab_mast3rslam_mono = mast3r_slam.vslamlab_mast3rslam_mono:main',
         ]
     },
-    install_requires=[f"asmk @ {asmk.as_uri()}"],
+    install_requires=[f"asmk @ {asmk.as_uri()}", f"imgui @ {pyimgui_path.as_uri()}"],
     ext_modules=[
         CUDAExtension(
             name='mast3r_slam_backends',
