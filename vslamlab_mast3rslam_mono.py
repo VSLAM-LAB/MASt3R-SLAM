@@ -167,14 +167,10 @@ def main():
 
     args = parser.parse_args()
     no_viz = not bool(int(args.verbose))
-    settings_path = args.settings_yaml
-    if not os.path.exists(settings_path):
-        settings_path = pkg_resources.resource_filename(
+    if not os.path.exists(args.settings_yaml):
+        args.settings_yaml = pkg_resources.resource_filename(
             'mast3r_slam.configs', 'vslamlab_mast3rslam-dev_settings.yaml'
         )
-
-    with open(settings_path, 'r') as file:
-        settings = yaml.safe_load(file)
 
     load_config(args.settings_yaml)
     config["use_calib"] = not args.no_calib
