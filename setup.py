@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension, include_paths, library_paths
 import os.path as osp
-import os 
+import os, glob
 from pathlib import Path
 
 asmk = Path(__file__).parent / "thirdparty" / "mast3r" / "asmk"
@@ -23,6 +23,16 @@ setup(
         'dust3r': 'thirdparty/mast3r/dust3r',
         'in3d': 'thirdparty/in3d/in3d',
     },    
+    data_files=[
+        (
+            f"./resources/programs",
+            glob.glob("resources/*.glsl")
+        ),
+        (
+            f"./thirdparty/in3d/resources/programs",
+            glob.glob("resources/*.glsl")
+        ),
+    ],
     include_package_data=True,
     package_data={
         'mast3r_slam.config': ['vslamlab_mast3rslam_settings.yaml'], 
