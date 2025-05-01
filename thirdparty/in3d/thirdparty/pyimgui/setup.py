@@ -151,7 +151,7 @@ setup(
     name='imgui',
     version=VERSION,
     #packages=find_packages('.'),
-    packages=find_packages(include=["pyimgui", "pyimgui.*"]),
+    packages=find_packages(include=["pyimgui", "pyimgui.*", "imgui", "imgui.*"]),
     author=u'Michał Jaworski',
     author_email='swistakm@gmail.com',
 
