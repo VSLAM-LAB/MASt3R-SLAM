@@ -10,10 +10,10 @@ setup(
         "moderngl==5.12.0",
         "moderngl-window==2.4.6",
         "glfw",
-        "pyglm",
-        "msgpack",
-        "numpy",
-        "matplotlib",
-        "trimesh[easy]",
+        #"pyglm",
+        #"msgpack",
+        #"numpy",
+        #"matplotlib",
+        #"trimesh[easy]",
     ]
 )
