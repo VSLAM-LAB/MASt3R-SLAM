@@ -14,6 +14,7 @@ setup(
         "msgpack",
         "numpy",
         "matplotlib",
-        "trimesh[easy]",
+        #"trimesh[easy]",
+        "trimesh",
     ]
 )
