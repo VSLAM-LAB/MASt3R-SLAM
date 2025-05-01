@@ -12,8 +12,6 @@ ROOT = osp.dirname(osp.abspath(__file__))
 torch_include_dirs = include_paths()
 torch_library_dirs = library_paths()
 
-site_packages_path = osp.join(os.environ["CONDA_PREFIX"], "lib", "python3.11", "site-packages", "resources", "programs")
-
 setup(
     name='vslamlab-mast3rslam-mono',
     version='0.1',
@@ -26,12 +24,11 @@ setup(
         'dust3r': 'thirdparty/mast3r/dust3r',
         'in3d': 'thirdparty/in3d/in3d',
     },    
-    data_files=[
-        (os.path.join(site_packages_path, "shaders"), glob("resources/programs/*.glsl")),
-    ],
     include_package_data=True,
     package_data={
-        'mast3r_slam.config': ['vslamlab_mast3rslam_settings.yaml'], 
+        'mast3r_slam': ['resources/programs/*.glsl'],
+        'in3d': ['resources/programs/*.glsl'],
+        'mast3r_slam.config': ['vslamlab_mast3rslam_settings.yaml'],
     },
     entry_points={
         'console_scripts': [
