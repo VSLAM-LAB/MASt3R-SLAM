@@ -308,7 +308,7 @@ def main():
             print(f"FPS: {FPS}")
         i += 1
 
-    eval.save_ATE(args.exp_folder, 
+    eval.save_traj(args.exp_folder, 
                   args.exp_it.zfill(5) + '_KeyFrameTrajectory' + '.txt', dataset.timestamps, keyframes)
     
     print("done")
