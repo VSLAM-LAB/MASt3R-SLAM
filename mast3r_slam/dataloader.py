@@ -7,6 +7,7 @@ import torch
 import pyrealsense2 as rs
 import yaml
 import os
+import logging
 
 from mast3r_slam.mast3r_utils import resize_img
 from mast3r_slam.config import config
