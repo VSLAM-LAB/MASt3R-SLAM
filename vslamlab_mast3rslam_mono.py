@@ -148,8 +148,6 @@ def main():
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.set_grad_enabled(False)
     device = "cuda:0"
-    save_frames = False
-    datetime_now = str(datetime.datetime.now()).replace(" ", "_")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--sequence_path", type=str, help="path to image directory")
@@ -160,12 +158,10 @@ def main():
     parser.add_argument("--settings_yaml", type=str, help="settings_yaml")
     parser.add_argument("--verbose", type=str, help="verbose")
 
-    parser.add_argument("--save-as", default="default")
-    parser.add_argument("--no-viz", action="store_true")
-    parser.add_argument("--no_calib", action="store_true")
+    parser.add_argument("--use_calib", type=str, help="use available calibration")
     parser.add_argument("--checkpoints_dir", type=str, help="checkpoints")
 
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
     no_viz = not bool(int(args.verbose))
     if not os.path.exists(args.settings_yaml):
         args.settings_yaml = pkg_resources.resource_filename(
@@ -173,7 +169,7 @@ def main():
         )
 
     load_config(args.settings_yaml)
-    config["use_calib"] = not args.no_calib
+    config["use_calib"] = bool(int(args.use_calib)) #not args.no_calib
 
     print(config)
 
@@ -184,11 +180,6 @@ def main():
     dataset = load_dataset(args.sequence_path, args.rgb_txt, args.calibration_yaml)
     dataset.subsample(config["dataset"]["subsample"])
     num_frames = len(dataset.rgb_files)
-    #keyframe_interval = 100
-    #num_keyframes = num_frames / keyframe_interval
-    #print(f"Number of frames: {num_frames}")
-    #print(f"Number of keyframes: {num_keyframes}")
-    #print(f"Keyframe interval: {keyframe_interval}")
 
     h, w = dataset.get_img_shape()[0]
     keyframes = SharedKeyframes(manager, h, w)
@@ -273,9 +264,6 @@ def main():
             if try_reloc:
                 states.set_mode(Mode.RELOC)
             states.set_frame(frame)
-            # if i % keyframe_interval == 0:
-            #     print(f"Force Create KeyFrame {i}")
-            #     add_new_kf = True
 
         elif mode == Mode.RELOC:
             X, C = mast3r_inference_mono(model, frame)
