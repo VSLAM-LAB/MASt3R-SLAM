@@ -8,6 +8,7 @@ import pyrealsense2 as rs
 import yaml
 import os
 import logging
+import pandas as pd
 
 from mast3r_slam.mast3r_utils import resize_img
 from mast3r_slam.config import config
@@ -66,43 +67,50 @@ class MonocularDataset(torch.utils.data.Dataset):
         return self.camera_intrinsics is not None
 
 class VSLAMLABDataset(MonocularDataset):
-    def __init__(self, sequence_path, rgb_txt, calibration_yaml):
+    def __init__(self, sequence_path, rgb_csv, calibration_yaml):
         super().__init__()
         self.dataset_path = pathlib.Path(sequence_path)
  
         # Load rgb images
-        self.rgb_files = []
-        self.timestamps = []
- 
-        with open(rgb_txt, 'r') as file:
-            for line in file:
-                timestamp, path, *extra = line.strip().split(' ')
-                self.rgb_files.append(os.path.join(sequence_path, path))
-                self.timestamps.append(timestamp)
- 
+        df = pd.read_csv(rgb_csv)       
+        self.rgb_files = df['path_rgb0'].to_list()
+        self.timestamps = df['ts_rgb0 (s)'].to_list()
+
+        for i, rgb_file in enumerate(self.rgb_files):
+            self.rgb_files[i] = os.path.join(sequence_path, rgb_file)
+            
         with open(calibration_yaml, 'r') as file:
             lines = file.readlines()
  
         if lines and lines[0].strip() == '%YAML:1.0':
             lines = lines[1:]
  
-        calibration = yaml.safe_load(''.join(lines))  
+        #calibration = yaml.safe_load(''.join(lines))  
+        fs = cv2.FileStorage(str(calibration_yaml), cv2.FILE_STORAGE_READ)
+        camera_model = fs.getNode("Camera0.model").string()
 
         self.use_calibration = True
-        if not config["use_calib"] or (calibration["Camera.model"] == "UNKNOWN"):
-            if config["use_calib"] and calibration["Camera.model"] == "UNKNOWN":
+        if not config["use_calib"] or (camera_model == "UNKNOWN"):
+            if config["use_calib"] and camera_model == "UNKNOWN":
                 logging.error("Camera model is UNKNOWN, calibration will not be used.")
             config["use_calib"] = False
             self.use_calibration = False
         else:    
-            fx, fy, cx, cy = calibration["Camera.fx"],calibration["Camera.fy"],calibration["Camera.cx"],calibration["Camera.cy"]
-            k1, k2, p1, p2, k3 = calibration["Camera.k1"], calibration["Camera.k2"], calibration["Camera.p1"], calibration["Camera.p2"], calibration["Camera.k3"]
-            W = calibration["Camera.w"]
-            H = calibration["Camera.h"]
- 
-            if (calibration["Camera.k1"] == 0 and calibration["Camera.k2"] == 0 and calibration["Camera.k3"] == 0 
-                and calibration["Camera.p1"] == 0 and calibration["Camera.p2"] == 0):
- 
+            def read_real(key: str) -> float:
+                node = fs.getNode(key)
+                return float(node.real()) if not node.empty() else 0.0
+            def read_int(key: str) -> int:
+                node = fs.getNode(key)
+                if node.empty():
+                    return 0.0
+                return int(node.real())
+            
+            fx, fy, cx, cy = map(read_real, ["Camera0.fx", "Camera0.fy", "Camera0.cx", "Camera0.cy"])
+            k1, k2, p1, p2, k3 = map(read_real, ["Camera0.k1", "Camera0.k2", "Camera0.p1", "Camera0.p2", "Camera0.k3"])
+            H = read_int("Camera0.h")
+            W = read_int("Camera0.w")
+            
+            if (k1 == 0 and k2 == 0 and k3 == 0 and p1 == 0 and p2 == 0):
                 calibration = np.array([fx, fy, cx, cy])
             else:
                 calibration = np.array([fx, fy, cx, cy, k1, k2, p1, p2, k3])
@@ -365,8 +373,8 @@ class Intrinsics:
         return Intrinsics(img_size, W, H, K, K_opt, distortion, mapx, mapy)
 
 
-def load_dataset(sequence_path, rgb_txt, calibration_yaml):
-    return VSLAMLABDataset(sequence_path, rgb_txt, calibration_yaml)
+def load_dataset(sequence_path, rgb_csv, calibration_yaml):
+    return VSLAMLABDataset(sequence_path, rgb_csv, calibration_yaml)
 
     # split_dataset_type = dataset_path.split("/")
     # if "tum" in split_dataset_type:
