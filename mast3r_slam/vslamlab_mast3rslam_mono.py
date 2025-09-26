@@ -152,7 +152,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--sequence_path", type=str, help="path to image directory")
     parser.add_argument("--calibration_yaml", type=str, help="path to calibration file")
-    parser.add_argument("--rgb_txt", type=str, help="path to image list")
+    parser.add_argument("--rgb_csv", type=str, help="path to image list")
     parser.add_argument("--exp_folder", type=str, help="path to save results")
     parser.add_argument("--exp_it", type=str, help="experiment iteration")
     parser.add_argument("--settings_yaml", type=str, help="settings_yaml")
@@ -177,7 +177,7 @@ def main():
     main2viz = new_queue(manager, no_viz)
     viz2main = new_queue(manager, no_viz)
 
-    dataset = load_dataset(args.sequence_path, args.rgb_txt, args.calibration_yaml)
+    dataset = load_dataset(args.sequence_path, args.rgb_csv, args.calibration_yaml)
     dataset.subsample(config["dataset"]["subsample"])
     num_frames = len(dataset.rgb_files)
 

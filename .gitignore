@@ -140,3 +140,4 @@ screen.yaml
 notebooks/*
 
 install_mast3rslam-dev.txt
+thirdparty/in3d/thirdparty/pyimgui/imgui/core.cpp
